@@ -15,8 +15,6 @@ const CHART_COLORS = [
   'rgb(201, 203, 207)'
 ]
 
-const COS_CACHE = {} as { [key: string]: number; };
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
