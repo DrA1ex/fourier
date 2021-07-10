@@ -7,7 +7,7 @@
       <button class="btn btn-secondary" (click)="openWaveSelectorModal()">Generate</button>
     </div>
     <div class="col-auto">
-      <button class="col-auto btn btn-danger" (click)="playSound(sourceData)">Record</button>
+      <button class="col-auto btn btn-danger" (click)="playSound(sourceData)" disabled>Record</button>
     </div>
   </div>
   <hr/>
@@ -40,9 +40,9 @@
     </div>
     <div class="col-auto">
       <div class="row">
-        <div class="col-auto" *ngFor="let freq of detectedFreqs">
+        <div class="col-auto" *ngFor="let freqPair of detectedFreqsWithNotes">
           <div class="shadow-sm badge bg-warning text-dark mt-1 fs-6" style="cursor:pointer;"
-               (click)="playFreq(freq)">{{freq}} Hz
+               (click)="playFreq(freqPair[0])">{{freqPair[0]}} Hz ({{freqPair[1]}})
           </div>
         </div>
       </div>

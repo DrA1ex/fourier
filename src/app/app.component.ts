@@ -4,6 +4,7 @@ import Chart from "chart.js/auto";
 import {SAMPLE_RATE, SoundUtils} from "./utils/sound.utils";
 import {FourierUtils} from "./utils/fourier.utils";
 import {WaveSelectorComponent} from "./components/wave-selector/wave-selector.component";
+import {NoteUtils} from "./utils/note.utils";
 
 const GENERATE_DATA_CNT = 8192;
 
@@ -15,6 +16,7 @@ const GENERATE_DATA_CNT = 8192;
 })
 export class AppComponent {
   public detectedFreqs: number[] = []
+  public detectedFreqsWithNotes: [number, string][] = []
 
   public sourceData: number[] = SoundUtils.generateWaveFromFrequencies(
     [220, 262, 330, 440, 523, 659], GENERATE_DATA_CNT);
@@ -126,6 +128,8 @@ export class AppComponent {
 
     const peaks = FourierUtils.detectDftPeaks(fourierSet)
     this.detectedFreqs = peaks.map(f => Math.ceil(f.x));
+    this.detectedFreqsWithNotes = this.detectedFreqs.map(f => [f, NoteUtils.getApproxNoteName(f)]);
+
     this.fourierData = SoundUtils.generateWaveFromFrequencies(this.detectedFreqs, GENERATE_DATA_CNT);
 
     this.resultChart.data.datasets = [{

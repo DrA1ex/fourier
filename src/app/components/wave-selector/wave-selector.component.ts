@@ -80,7 +80,7 @@ export class WaveSelectorComponent {
     this.init();
 
     this.modal.show();
-    this.freqs = RandomUtils.randomChoice(PREDEFINED_WAVES);
+    this.freqs = RandomUtils.randomChoice(PREDEFINED_WAVES).concat([]);
     this.drawChart();
   }
 

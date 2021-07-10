@@ -14,7 +14,7 @@ export class FourierUtils {
   }
 
   public static detectDftPeaks(data: any[]): any[] {
-    if (!data) {
+    if (!data || data.length == 0) {
       return [];
     }
 
@@ -28,7 +28,7 @@ export class FourierUtils {
         isDataAscending = true
       } else if (!isDataAscending) {
         lastValue = item
-      } else if (!peaks || peaks[peaks.length - 1] != lastValue) {
+      } else if (peaks.length == 0 || peaks[peaks.length - 1] != lastValue) {
         peaks.push(lastValue);
         isDataAscending = false;
       }
