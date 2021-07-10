@@ -11,7 +11,7 @@
   </div>
 
   <div class="row">
-    <div class="col">
+    <div class="col col-lg">
       <div class="row">
         <div class="col-auto h3">Source:</div>
         <div class="col-auto">
@@ -21,7 +21,7 @@
       <hr/>
       <div class="row">
         <div class="col-auto" *ngFor="let freq of freqs">
-          <div class="col-auto badge bg-dark position-relative">
+          <div class="badge bg-dark position-relative">
             <span class="h5">{{freq}} Hz</span>
             <button
               class="position-absolute top-0 start-100 translate-middle badge rounded-pill border-light btn btn-danger"
@@ -32,7 +32,7 @@
       </div>
       <canvas id="sourceChart"></canvas>
     </div>
-    <div class="col">
+    <div class="col col-lg">
       <div class="row">
         <div class="col-auto h3">Detected:</div>
         <div class="col-auto">
@@ -42,10 +42,11 @@
       <hr/>
       <div class="row">
         <div class="col-auto" *ngFor="let freq of detectedFreqs">
-          <div class="col-auto badge bg-dark"><span class="h5">{{freq}} Hz</span></div>
+          <div class="badge bg-dark"><span class="h5">{{freq}} Hz</span></div>
         </div>
       </div>
       <canvas id="resultChart"></canvas>
     </div>
   </div>
 </div>
+
