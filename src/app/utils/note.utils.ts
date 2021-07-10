@@ -138,11 +138,11 @@ export class NoteUtils {
     }
 
     const candidates: number[] = [];
-    if (start > 0 && start < ALL_NOTES_FREQS.length - 1 && Math.abs(freq - ALL_NOTES_FREQS[start]) < NOTE_MAX_APPROX_DIFFERENCE) {
+    if (start >= 0 && start < ALL_NOTES_FREQS.length && Math.abs(freq - ALL_NOTES_FREQS[start]) < NOTE_MAX_APPROX_DIFFERENCE) {
       candidates.push(ALL_NOTES_FREQS[start]);
     }
 
-    if (end > 0 && end < ALL_NOTES_FREQS.length - 1 && Math.abs(freq - ALL_NOTES_FREQS[end]) < NOTE_MAX_APPROX_DIFFERENCE) {
+    if (end >= 0 && end < ALL_NOTES_FREQS.length && Math.abs(freq - ALL_NOTES_FREQS[end]) < NOTE_MAX_APPROX_DIFFERENCE) {
       candidates.push(ALL_NOTES_FREQS[end]);
     }
 
