@@ -1,0 +1,44 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Generate wave</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="container">
+        <div class="row">
+          <div class="col-auto">
+            <input class="form-control" placeholder="Frequency to add (Hz)" #newFreq> &nbsp;
+          </div>
+          <div class="col-auto">
+            <button class="col-auto btn btn-primary" (click)="onAdd(newFreq.value); newFreq.value='';">Add</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-auto h3">Source:</div>
+          <div class="col-auto">
+            <button class="btn btn-secondary" (click)="onPlay()">Play</button>
+          </div>
+        </div>
+        <hr/>
+        <div class="row">
+          <div class="col-auto" *ngFor="let freq of freqs">
+            <div class="badge bg-dark position-relative mb-2">
+              <span class="h5">{{freq}} Hz</span>
+              <button
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill border-light btn btn-danger"
+                (click)="onRemove(freq)">X
+              </button>
+            </div>
+          </div>
+        </div>
+        <canvas #waveSelectorSourceChart></canvas>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-primary" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>

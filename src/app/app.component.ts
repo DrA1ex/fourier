@@ -1,19 +1,12 @@
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import Chart from "chart.js/auto";
 
-const POINTS_CNT = 4096;
-const SAMPLE_RATE = 22050;
+import {SAMPLE_RATE, SoundUtils} from "./utils/sound.utils";
+import {FourierUtils} from "./utils/fourier.utils";
+import {WaveSelectorComponent} from "./components/wave-selector/wave-selector.component";
 
+const GENERATE_DATA_CNT = 8192;
 
-const CHART_COLORS = [
-  'rgb(255, 99, 132)',
-  'rgb(255, 159, 64)',
-  'rgb(255, 205, 86)',
-  'rgb(75, 192, 192)',
-  'rgb(54, 162, 235)',
-  'rgb(153, 102, 255)',
-  'rgb(201, 203, 207)'
-]
 
 @Component({
   selector: 'app-root',
@@ -21,33 +14,18 @@ const CHART_COLORS = [
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  public freqs: number[] = [220, 262, 330, 440, 523, 659]
   public detectedFreqs: number[] = []
+
+  public sourceData: number[] = SoundUtils.generateWaveFromFrequencies(
+    [220, 262, 330, 440, 523, 659], GENERATE_DATA_CNT);
+  public fourierData: number[] = [];
 
   private sourceChart?: Chart;
   private resultChart?: Chart;
   private audioContext?: AudioContext;
 
-  public onRemove(freq: number) {
-    const index = this.freqs.indexOf(freq);
-    this.freqs.splice(index, 1);
-
-    this.drawChart();
-  }
-
-  public onAdd(freqStr?: string) {
-    const freq = freqStr && Number.parseInt(freqStr);
-    if (!freq || freq < 0) {
-      return
-    }
-
-    const index = this.freqs.indexOf(freq);
-    if (index < 0) {
-      this.freqs.push(freq);
-    }
-
-    this.drawChart();
-  }
+  @ViewChild('waveSelectorModal')
+  waveSelectorModalView!: WaveSelectorComponent;
 
   private ngOnInit() {
     this.audioContext = new AudioContext();
@@ -101,60 +79,21 @@ export class AppComponent {
     this.drawChart();
   }
 
-  private generateSourceData(): [any[], any[]] {
-    if (this.freqs.length == 0) {
-      return [[], []];
-    }
-
-    const resultSet = new Array(POINTS_CNT);
-    const sets = new Array(this.freqs.length);
-    for (let i = 0; i < sets.length; ++i) {
-      sets[i] = new Array(POINTS_CNT);
-    }
-
-    const step = 1 / SAMPLE_RATE;
-    const valuePerStep = 2 * Math.PI;
-
-    for (let i = 0; i < POINTS_CNT; ++i) {
-      const xLabel = `${(i * step * 1000).toFixed(2)}ms`;
-
-      let sumValue = 0;
-      for (let freqIndex = 0; freqIndex < this.freqs.length; ++freqIndex) {
-        const yValue = Math.sin(i * step * valuePerStep * this.freqs[freqIndex]);
-        sumValue += yValue;
-        sets[freqIndex][i] = {x: xLabel, y: yValue}
-      }
-
-      resultSet[i] = {
-        x: xLabel,
-        y: sumValue
-      }
-    }
-
-    return [resultSet, sets];
-  }
-
-  public playSound(freqs: number[]) {
+  public playSound(data: number[]) {
     if (!this.audioContext) {
       return
     }
 
-    const gain = this.audioContext.createGain();
+    SoundUtils.playWave(this.audioContext, data);
+  }
 
-    const time = this.audioContext.currentTime
-    for (let i = 0; i < freqs.length; ++i) {
-      const osc = this.audioContext.createOscillator()
-      osc.type = "sine";
-      osc.frequency.value = freqs[i];
-
-      osc.connect(gain);
-      osc.start(time);
-      osc.stop(time + 1);
+  public playFreq(freq: number) {
+    if (!this.audioContext) {
+      return
     }
 
-    gain.gain.value = 0.5 / freqs.length;
-    gain.gain.linearRampToValueAtTime(0.01, time + 1);
-    gain.connect(this.audioContext.destination);
+    const data = SoundUtils.generateWaveFromFrequencies([freq], GENERATE_DATA_CNT)
+    SoundUtils.playWave(this.audioContext, data);
   }
 
   private drawChart() {
@@ -162,35 +101,32 @@ export class AppComponent {
       return;
     }
 
-    const [resultSet, sets] = this.generateSourceData();
-    const otherDatasets = this.freqs.map((f, i) => {
-      return {
-        label: `freq. ${f}`,
-        data: sets[i],
-        borderColor: CHART_COLORS[i % CHART_COLORS.length],
-        backgroundColor: CHART_COLORS[i % CHART_COLORS.length],
-        borderDash: [5, 5]
-      }
-    });
+    const step = 1 / SAMPLE_RATE;
+    const sourceDataSet: any[] = this.sourceData.map((value, i) => ({
+      x: `${(i * step * 1000).toFixed(2)}ms`,
+      y: value
+    }));
 
     this.sourceChart.data.datasets = [{
       label: "Wave",
-      data: resultSet,
-      borderColor: 'rgb(0,0,0)',
-      backgroundColor: 'rgb(0,0,0)'
-    }, ...otherDatasets];
+      data: sourceDataSet,
+      borderColor: 'rgb(31,90,128)',
+      backgroundColor: 'rgb(31,90,128)'
+    }];
 
-    const fourier = AppComponent.calcDFT(resultSet.map(v => v.y));
+    const fourier = FourierUtils.dft(this.sourceData);
     const fourierSet = new Array(fourier.length);
+    const freqStep = SAMPLE_RATE / fourier.length / 2;
     for (let i = 0; i < fourier.length; ++i) {
       fourierSet[i] = {
-        x: `${(i * SAMPLE_RATE / POINTS_CNT).toFixed(2)}`,
+        x: `${(i * freqStep).toFixed(2)}`,
         y: fourier[i]
       };
     }
 
-    const peaks = AppComponent.detectPeaks(fourierSet)
+    const peaks = FourierUtils.detectDftPeaks(fourierSet)
     this.detectedFreqs = peaks.map(f => Math.ceil(f.x));
+    this.fourierData = SoundUtils.generateWaveFromFrequencies(this.detectedFreqs, GENERATE_DATA_CNT);
 
     this.resultChart.data.datasets = [{
       label: "Fourier",
@@ -216,41 +152,12 @@ export class AppComponent {
     }, 0)
   }
 
-  private static calcDFT(data: number[]): number[] {
-    const size = data.length;
-    const fourierData = new Array(POINTS_CNT / 2);
-    const const_part = 2 * Math.PI / size;
-
-    for (let freq = 0; freq < size / 2; ++freq) {
-      const const_part_with_freq = const_part * freq;
-      const freq_amp = data.reduce((acc, value, i) => acc + value * Math.cos(const_part_with_freq * i), 0);
-      fourierData[freq] = Math.abs(freq_amp) / size;
-    }
-
-    return fourierData;
+  public openWaveSelectorModal() {
+    this.waveSelectorModalView.show();
   }
 
-  private static detectPeaks(data: any[]): any[] {
-    if (!data) {
-      return [];
-    }
-
-    const peaks = [];
-    let lastValue = data[0];
-    let isDataAscending = false;
-
-    for (const item of data) {
-      if (item.y >= lastValue.y) {
-        lastValue = item;
-        isDataAscending = true
-      } else if (!isDataAscending) {
-        lastValue = item
-      } else if (!peaks || peaks[peaks.length - 1] != lastValue) {
-        peaks.push(lastValue);
-        isDataAscending = false;
-      }
-    }
-
-    return peaks;
+  public updateSourceWave(data: number[]) {
+    this.sourceData = data;
+    this.drawChart();
   }
 }
