@@ -64,8 +64,7 @@ export class WaveRecorderComponent {
       setTimeout(() => SoundUtils.recordWave(this.audioContext, DEFAULT_SAMPLE_SIZE).then(data => {
         this.sourceData = data;
         this.drawChart();
-        this.setRecordState(-1);
-      }), 300);
+      }).finally(() => this.setRecordState(-1)), 300);
     }, 3000);
   }
 

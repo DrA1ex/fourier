@@ -53,13 +53,13 @@ export class SoundUtils {
 
   public static async recordWave(ctx: AudioContext, length: number): Promise<number[]> {
     if (!navigator?.mediaDevices?.getUserMedia) {
-      throw new Error("Not supported");
+      return [];
     }
 
     const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
     const requestResult = await navigator.permissions.query({name: 'microphone'});
     if (requestResult.state != 'granted') {
-      throw new Error("Access denied");
+      return [];
     }
 
     const sourceSampleRate = stream.getAudioTracks()[0].getSettings().sampleRate || SAMPLE_RATE;
