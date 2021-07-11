@@ -19,3 +19,8 @@
 
   background-color: #ffda6c;
 }
+
+.progress-bar-dft > .progress-bar {
+  height: 100%;
+  background-color: #ffc107;
+}

@@ -1,4 +1,5 @@
 export const SAMPLE_RATE = 22050;
+export const DEFAULT_SAMPLE_SIZE = 8192;
 
 export class SoundUtils {
   public static playWave(ctx: AudioContext, data: number[]) {

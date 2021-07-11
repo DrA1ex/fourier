@@ -1,14 +1,12 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import Chart from "chart.js/auto";
 
-import {SAMPLE_RATE, SoundUtils} from "./utils/sound.utils";
+import {DEFAULT_SAMPLE_SIZE, SAMPLE_RATE, SoundUtils} from "./utils/sound.utils";
 import {FourierUtils} from "./utils/fourier.utils";
 import {NoteUtils} from "./utils/note.utils";
 import {WaveSelectorComponent} from "./components/wave-selector/wave-selector.component";
 import {WaveRecorderComponent} from "./components/wave-recorder/wave-recorder.component";
 import {ChartUtils} from "./utils/chart.utils";
-
-const GENERATE_DATA_CNT = 8192;
 
 interface DftItem {
   note: string;
@@ -27,7 +25,7 @@ export class AppComponent implements AfterViewInit {
   public detectedDftItems: DftItem[] = []
 
   public sourceData: number[] = SoundUtils.generateWaveFromFrequencies(
-    [220, 262, 330, 440, 523, 659], GENERATE_DATA_CNT);
+    [220, 262, 330, 440, 523, 659], DEFAULT_SAMPLE_SIZE);
   public fourierData: number[] = [];
 
   private sourceChart?: Chart;
@@ -76,7 +74,7 @@ export class AppComponent implements AfterViewInit {
       return
     }
 
-    const data = SoundUtils.generateWaveFromFrequencies([freq], GENERATE_DATA_CNT)
+    const data = SoundUtils.generateWaveFromFrequencies([freq], DEFAULT_SAMPLE_SIZE)
     SoundUtils.playWave(this.audioContext, data);
   }
 
@@ -116,7 +114,7 @@ export class AppComponent implements AfterViewInit {
     }));
 
     this.fourierData = SoundUtils.generateWaveFromFrequencies(
-      this.detectedDftItems.map(f => f.frequency), GENERATE_DATA_CNT);
+      this.detectedDftItems.map(f => f.frequency), DEFAULT_SAMPLE_SIZE);
 
     this.resultChart.data.datasets = [{
       label: "Fourier",

@@ -48,7 +48,7 @@
           <div class="shadow-sm badge bg-transparent text-dark mt-1 fs-6 position-relative pointer"
                (click)="playFreq(dftItem.frequency)">
             <div class="progress progress-bar-dft">
-              <div class="progress-bar bg-warning h-100"
+              <div class="progress-bar"
                    [style]="{width: math.min(dftItem.amplitude / 0.6 * 100, 100) + '%'}"
                    (click)="playFreq(dftItem.frequency)">
               </div>

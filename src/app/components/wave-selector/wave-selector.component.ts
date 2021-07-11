@@ -1,10 +1,8 @@
 import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
 import Chart from "chart.js/auto";
 import {RandomUtils} from "../../utils/random.utils";
-import {SAMPLE_RATE, SoundUtils} from "../../utils/sound.utils";
+import {DEFAULT_SAMPLE_SIZE, SAMPLE_RATE, SoundUtils} from "../../utils/sound.utils";
 import {ChartUtils} from "../../utils/chart.utils";
-
-const POINTS_CNT = 8192;
 
 const CHART_COLORS = [
   'rgb(255, 99, 132)',
@@ -99,16 +97,16 @@ export class WaveSelectorComponent {
       return [[], []];
     }
 
-    const resultSet = new Array(POINTS_CNT);
+    const resultSet = new Array(DEFAULT_SAMPLE_SIZE);
     const sets = new Array(this.freqs.length);
     for (let i = 0; i < sets.length; ++i) {
-      sets[i] = new Array(POINTS_CNT);
+      sets[i] = new Array(DEFAULT_SAMPLE_SIZE);
     }
 
     const step = 1 / SAMPLE_RATE;
     const valuePerStep = 2 * Math.PI;
 
-    for (let i = 0; i < POINTS_CNT; ++i) {
+    for (let i = 0; i < DEFAULT_SAMPLE_SIZE; ++i) {
       const xLabel = `${(i * step * 1000).toFixed(2)}ms`;
 
       let sumValue = 0;

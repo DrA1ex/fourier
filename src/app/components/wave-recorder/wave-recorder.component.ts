@@ -1,12 +1,10 @@
 import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/core';
 import Chart from "chart.js/auto";
-import {SAMPLE_RATE, SoundUtils} from "../../utils/sound.utils";
+import {DEFAULT_SAMPLE_SIZE, SAMPLE_RATE, SoundUtils} from "../../utils/sound.utils";
 import {ChartUtils} from "../../utils/chart.utils";
 
-const RECORDING_SAMPLES_CNT = 8192;
-
-const RECORD_COUNTDOWN_WAVE = SoundUtils.generateWaveFromFrequencies([220, 440, 880], RECORDING_SAMPLES_CNT / 4);
-const RECORD_FINISH_WAVE = SoundUtils.generateWaveFromFrequencies([262, 523, 1045], RECORDING_SAMPLES_CNT / 4);
+const RECORD_COUNTDOWN_WAVE = SoundUtils.generateWaveFromFrequencies([220, 440, 880], 2048);
+const RECORD_FINISH_WAVE = SoundUtils.generateWaveFromFrequencies([262, 523, 1045], 2048);
 
 @Component({
   selector: 'app-wave-recorder',
@@ -41,7 +39,7 @@ export class WaveRecorderComponent {
     this.modal = new bootstrap.Modal(this.hostElement.nativeElement)
     this.audioContext = new AudioContext({sampleRate: SAMPLE_RATE});
     this.sourceChart = ChartUtils.createDefaultWaveChart(this.chartElement.nativeElement as HTMLCanvasElement);
-    this.sourceData = SoundUtils.generateWaveFromFrequencies([220], RECORDING_SAMPLES_CNT)
+    this.sourceData = SoundUtils.generateWaveFromFrequencies([220], DEFAULT_SAMPLE_SIZE)
 
     this.initialized = true;
   }
@@ -63,7 +61,7 @@ export class WaveRecorderComponent {
     setTimeout(() => this.setRecordState(1), 2000);
     setTimeout(() => {
       this.setRecordState(0)
-      setTimeout(() => SoundUtils.recordWave(this.audioContext, RECORDING_SAMPLES_CNT).then(data => {
+      setTimeout(() => SoundUtils.recordWave(this.audioContext, DEFAULT_SAMPLE_SIZE).then(data => {
         this.sourceData = data;
         this.drawChart();
         this.setRecordState(-1);
