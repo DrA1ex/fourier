@@ -57,11 +57,6 @@ export class SoundUtils {
     }
 
     const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
-    const requestResult = await navigator.permissions.query({name: 'microphone'});
-    if (requestResult.state != 'granted') {
-      return [];
-    }
-
     const sourceSampleRate = stream.getAudioTracks()[0].getSettings().sampleRate || SAMPLE_RATE;
     const recorder = new MediaRecorder(stream);
 
