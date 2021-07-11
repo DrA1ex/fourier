@@ -18,7 +18,7 @@
         <div class="row">
           <div class="col-auto h3">Source:</div>
           <div class="col-auto">
-            <button class="btn btn-secondary" (click)="onPlay()">Play</button>
+            <button class="btn btn-secondary" (click)="onPlay()" [disabled]="sourceData.length <= 0">Play</button>
           </div>
         </div>
         <hr/>

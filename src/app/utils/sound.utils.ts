@@ -2,6 +2,10 @@ export const SAMPLE_RATE = 22050;
 
 export class SoundUtils {
   public static playWave(ctx: AudioContext, data: number[]) {
+    if (data.length < 0) {
+      return;
+    }
+
     const buffer = ctx.createBuffer(1, data.length, SAMPLE_RATE);
     const channel = buffer.getChannelData(0);
 
@@ -26,10 +30,14 @@ export class SoundUtils {
     source.connect(gain);
     gain.connect(ctx.destination);
 
-    source.start();
+    source.start(ctx.currentTime);
   }
 
   public static generateWaveFromFrequencies(frequencies: number[], length: number): number[] {
+    if (frequencies.length == 0) {
+      return []
+    }
+
     const result = new Array(length);
     const step = 1 / SAMPLE_RATE;
     const valuePerStep = 2 * Math.PI;
@@ -40,5 +48,66 @@ export class SoundUtils {
     }
 
     return result;
+  }
+
+  public static async recordWave(ctx: AudioContext, length: number): Promise<number[]> {
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      throw new Error("Not supported");
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+    const requestResult = await navigator.permissions.query({name: 'microphone'});
+    if (requestResult.state != 'granted') {
+      throw new Error("Access denied");
+    }
+
+    const sourceSampleRate = stream.getAudioTracks()[0].getSettings().sampleRate || SAMPLE_RATE;
+    const recorder = new MediaRecorder(stream);
+
+    const chunks: Blob[] = [];
+    let read = 0;
+    let finished = false;
+
+    await new Promise<void>((resolve, reject) => {
+      recorder.ondataavailable = (e) => {
+        console.log(e.data.size, e.timecode);
+
+        if (finished) {
+          return;
+        }
+
+        read += e.data.size;
+        chunks.push(e.data);
+
+        if (read >= length) {
+          finished = true
+          recorder.stop();
+          resolve();
+        }
+      }
+
+      recorder.start(length / sourceSampleRate);
+    });
+
+    let written = 0;
+    const readBuffer = new Uint8Array(read);
+    for (const chunk of chunks) {
+      const data = await chunk.arrayBuffer();
+      readBuffer.set(new Uint8Array(data), written)
+      written += data.byteLength;
+    }
+
+    for (const track of stream.getAudioTracks()) {
+      track.stop();
+    }
+
+    const offset = SAMPLE_RATE / 10; // Skip first 100ms
+
+    const decoded = await ctx.decodeAudioData(readBuffer.buffer);
+
+    const result = Array.from(decoded.getChannelData(0).slice(offset, length + offset));
+
+    const maxValue = result.reduce((acc, cur) => Math.max(acc, Math.abs(cur)), 0);
+    return result.map(v => v / maxValue);
   }
 }

@@ -1,0 +1,32 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Record wave</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="container">
+        <div class="row">
+          <div class="col-auto">
+            <button class="btn btn-danger" (click)="onRecord()">Record</button>
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-secondary" (click)="onPlay()" [disabled]="sourceData.length <= 0">Play</button>
+          </div>
+        </div>
+        <hr/>
+        <canvas #waveRecorderChart></canvas>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-primary" (click)="save()">Save</button>
+    </div>
+    <div class="position-absolute h-100 w-100 bg-dark-opaque" *ngIf="state >= 0">
+      <div class="position-absolute top-50 start-50">
+        <span class="text-danger fs-1" *ngIf="state > 0">{{state}}</span>
+        <div class="spinner-grow text-danger" *ngIf="state == 0"></div>
+      </div>
+    </div>
+  </div>
+</div>

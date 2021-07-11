@@ -1,22 +1,30 @@
-import {Component, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import Chart from "chart.js/auto";
 
 import {SAMPLE_RATE, SoundUtils} from "./utils/sound.utils";
 import {FourierUtils} from "./utils/fourier.utils";
-import {WaveSelectorComponent} from "./components/wave-selector/wave-selector.component";
 import {NoteUtils} from "./utils/note.utils";
+import {WaveSelectorComponent} from "./components/wave-selector/wave-selector.component";
+import {WaveRecorderComponent} from "./components/wave-recorder/wave-recorder.component";
+import {ChartUtils} from "./utils/chart.utils";
 
 const GENERATE_DATA_CNT = 8192;
 
+interface DftItem {
+  note: string;
+  frequency: number;
+  amplitude: number;
+}
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
-  public detectedFreqs: number[] = []
-  public detectedFreqsWithNotes: [number, string][] = []
+export class AppComponent implements AfterViewInit {
+  public math = Math;
+
+  public detectedDftItems: DftItem[] = []
 
   public sourceData: number[] = SoundUtils.generateWaveFromFrequencies(
     [220, 262, 330, 440, 523, 659], GENERATE_DATA_CNT);
@@ -26,59 +34,33 @@ export class AppComponent {
   private resultChart?: Chart;
   private audioContext?: AudioContext;
 
+  @ViewChild('sourceChart', {static: false})
+  sourceChartElement!: ElementRef;
+  @ViewChild('fourierChart', {static: false})
+  fourierChartElement!: ElementRef;
+
   @ViewChild('waveSelectorModal')
   waveSelectorModalView!: WaveSelectorComponent;
+  @ViewChild('waveRecorderModal')
+  waveRecorderModalView!: WaveRecorderComponent;
 
-  private ngOnInit() {
+  public ngAfterViewInit(): void {
     this.audioContext = new AudioContext();
 
-    this.sourceChart = new Chart(document.getElementById('sourceChart') as HTMLCanvasElement, {
-      type: 'line',
-      data: {datasets: []},
-      options: {
-        elements: {
-          line: {
-            borderWidth: 2,
-          },
-          point: {
-            radius: 0
-          }
+    this.sourceChart = ChartUtils.createDefaultWaveChart(this.sourceChartElement.nativeElement as HTMLCanvasElement);
+    this.resultChart = ChartUtils.createDefaultWaveChart(this.fourierChartElement.nativeElement as HTMLCanvasElement, {
+      scales: {
+        x: {
+          display: true,
+          type: 'logarithmic'
         },
-        animation: false,
-        spanGaps: true,
-        normalized: true,
-        plugins: {decimation: {enabled: true}},
-      }
-    });
-    this.resultChart = new Chart(document.getElementById('resultChart') as HTMLCanvasElement, {
-      type: 'line',
-      data: {datasets: []},
-      options: {
-        elements: {
-          line: {
-            borderWidth: 2,
-          },
-          point: {
-            radius: 0
-          }
-        },
-        scales: {
-          x: {
-            display: true,
-            type: 'logarithmic'
-          },
-          y: {
-            display: true,
-          }
-        },
-        animation: false,
-        spanGaps: true,
-        normalized: true,
-        plugins: {decimation: {enabled: true}},
-      }
+        y: {
+          display: true,
+        }
+      },
     });
 
-    this.drawChart();
+    setTimeout(() => this.drawChart());
   }
 
   public playSound(data: number[]) {
@@ -127,10 +109,14 @@ export class AppComponent {
     }
 
     const peaks = FourierUtils.detectDftPeaks(fourierSet)
-    this.detectedFreqs = peaks.map(f => Math.ceil(f.x));
-    this.detectedFreqsWithNotes = this.detectedFreqs.map(f => [f, NoteUtils.getApproxNoteName(f)]);
+    this.detectedDftItems = peaks.map(f => ({
+      note: NoteUtils.getApproxNoteName(f.x),
+      frequency: f.x,
+      amplitude: f.y
+    }));
 
-    this.fourierData = SoundUtils.generateWaveFromFrequencies(this.detectedFreqs, GENERATE_DATA_CNT);
+    this.fourierData = SoundUtils.generateWaveFromFrequencies(
+      this.detectedDftItems.map(f => f.frequency), GENERATE_DATA_CNT);
 
     this.resultChart.data.datasets = [{
       label: "Fourier",
@@ -158,6 +144,10 @@ export class AppComponent {
 
   public openWaveSelectorModal() {
     this.waveSelectorModalView.show();
+  }
+
+  public openWaveRecorderModal() {
+    this.waveRecorderModalView.show();
   }
 
   public updateSourceWave(data: number[]) {

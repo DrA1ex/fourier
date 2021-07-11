@@ -1,1 +1,21 @@
 @import "../node_modules/bootstrap/dist/css/bootstrap.css";
+
+
+.bg-dark-opaque {
+  background-color: rgba(33, 37, 41, 0.5);
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.progress-bar-dft {
+  position: absolute;
+  z-index: -100;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+
+  background-color: #ffda6c;
+}

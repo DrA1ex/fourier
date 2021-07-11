@@ -2,6 +2,7 @@ import {Component, ElementRef, EventEmitter, Output, ViewChild} from '@angular/c
 import Chart from "chart.js/auto";
 import {RandomUtils} from "../../utils/random.utils";
 import {SAMPLE_RATE, SoundUtils} from "../../utils/sound.utils";
+import {ChartUtils} from "../../utils/chart.utils";
 
 const POINTS_CNT = 8192;
 
@@ -36,7 +37,7 @@ export class WaveSelectorComponent {
   private audioContext?: AudioContext;
   private sourceChart?: Chart;
 
-  private sourceData: number[] = []
+  public sourceData: number[] = []
   public freqs: number[] = [];
 
   private initialized: boolean = false;
@@ -53,25 +54,7 @@ export class WaveSelectorComponent {
     // @ts-ignore
     this.modal = new bootstrap.Modal(this.hostElement.nativeElement)
     this.audioContext = new AudioContext();
-
-    this.sourceChart = new Chart(this.chartElement.nativeElement as HTMLCanvasElement, {
-      type: 'line',
-      data: {datasets: []},
-      options: {
-        elements: {
-          line: {
-            borderWidth: 2,
-          },
-          point: {
-            radius: 0
-          }
-        },
-        animation: false,
-        spanGaps: true,
-        normalized: true,
-        plugins: {decimation: {enabled: true}},
-      }
-    });
+    this.sourceChart = ChartUtils.createDefaultWaveChart(this.chartElement.nativeElement as HTMLCanvasElement);
 
     this.initialized = true;
   }

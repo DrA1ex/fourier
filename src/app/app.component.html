@@ -7,7 +7,7 @@
       <button class="btn btn-secondary" (click)="openWaveSelectorModal()">Generate</button>
     </div>
     <div class="col-auto">
-      <button class="col-auto btn btn-danger" (click)="playSound(sourceData)" disabled>Record</button>
+      <button class="col-auto btn btn-danger" (click)="openWaveRecorderModal()">Record</button>
     </div>
   </div>
   <hr/>
@@ -17,7 +17,9 @@
       <div class="row">
         <div class="col-auto h3">Source wave</div>
         <div class="col-auto">
-          <button class="btn btn-secondary" (click)="playSound(sourceData)">Play</button>
+          <button class="btn btn-secondary" (click)="playSound(sourceData)" [disabled]="sourceData.length <= 0">
+            Play
+          </button>
         </div>
       </div>
     </div>
@@ -26,7 +28,9 @@
       <div class="row">
         <div class="col-auto h3">DFT-generated wave</div>
         <div class="col-auto">
-          <button class="btn btn-secondary" (click)="playSound(fourierData)">Play</button>
+          <button class="btn btn-secondary" (click)="playSound(fourierData)" [disabled]="fourierData.length <= 0">
+            Play
+          </button>
         </div>
       </div>
     </div>
@@ -40,9 +44,16 @@
     </div>
     <div class="col-auto">
       <div class="row">
-        <div class="col-auto" *ngFor="let freqPair of detectedFreqsWithNotes">
-          <div class="shadow-sm badge bg-warning text-dark mt-1 fs-6" style="cursor:pointer;"
-               (click)="playFreq(freqPair[0])">{{freqPair[0]}} Hz ({{freqPair[1]}})
+        <div class="col-auto mb-2" *ngFor="let dftItem of detectedDftItems">
+          <div class="shadow-sm badge bg-transparent text-dark mt-1 fs-6 position-relative pointer"
+               (click)="playFreq(dftItem.frequency)">
+            <div class="progress progress-bar-dft">
+              <div class="progress-bar bg-warning h-100"
+                   [style]="{width: math.min(dftItem.amplitude / 0.6 * 100, 100) + '%'}"
+                   (click)="playFreq(dftItem.frequency)">
+              </div>
+            </div>
+            <span>{{math.ceil(dftItem.frequency)}} Hz ({{dftItem.note}})</span>
           </div>
         </div>
       </div>
@@ -51,13 +62,15 @@
 
   <div class="row">
     <div class="col col-lg-6 col-md-12">
-      <canvas id="sourceChart"></canvas>
+      <canvas #sourceChart></canvas>
     </div>
     <div class="col col-lg-6 col-md-12">
-      <canvas id="resultChart"></canvas>
+      <canvas #fourierChart></canvas>
     </div>
   </div>
 </div>
 
 <!-- MODALS -->
 <app-wave-selector class="modal" (generatedWave)="updateSourceWave($event)" #waveSelectorModal></app-wave-selector>
+<app-wave-recorder class="modal" (generatedWave)="updateSourceWave($event)" #waveRecorderModal
+                   data-bs-backdrop="static" data-bs-keyboard="false"></app-wave-recorder>
