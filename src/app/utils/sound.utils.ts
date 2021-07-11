@@ -60,6 +60,7 @@ export class SoundUtils {
     const sourceSampleRate = stream.getAudioTracks()[0].getSettings().sampleRate || SAMPLE_RATE;
     const recorder = new MediaRecorder(stream);
 
+    const bytesToRead = length + sourceSampleRate / 20; // + extra 200ms
     const chunks: Blob[] = [];
     let read = 0;
     let finished = false;
@@ -75,14 +76,14 @@ export class SoundUtils {
         read += e.data.size;
         chunks.push(e.data);
 
-        if (read >= length) {
+        if (read >= bytesToRead) {
           finished = true
           recorder.stop();
           resolve();
         }
       }
 
-      recorder.start(length / sourceSampleRate);
+      recorder.start(length / sourceSampleRate); // + extra 200ms
     });
 
     let written = 0;
